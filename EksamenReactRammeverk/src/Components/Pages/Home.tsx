@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { ApiDataContext } from "../../Context/ApiDataContext.tsx";
-/* import { PersonalRecord } from "../../Types/PersonalRecord.tsx"; */
+import { ApiDataContext } from "../../Context/ApiDataContext";
+import { PersonalRecord } from "../../Types/PersonalRecord";
 
 const Home: React.FC = () => {
   const context = useContext(ApiDataContext);
@@ -13,11 +13,11 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      <h1>Welkommen Til Home</h1>
+      <h1>Velkommen Til Home</h1>
       <h2>Personlige Rekorder</h2>
       <ul>
-        {personalRecordsData.map((record) => (
-          <li key={record.exercise}>
+        {personalRecordsData.map((record: PersonalRecord, index: number) => (
+          <li key={`${record.exercise}-${record.maxWeight}-${record.maxReps}-${index}`}>
             {record.exercise}: {record.maxWeight} kg for {record.maxReps} reps
           </li>
         ))}

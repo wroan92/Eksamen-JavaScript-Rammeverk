@@ -22,8 +22,8 @@ const Dashboard: React.FC = () => {
         <ul>
           {exerciseData.map((session: TrainingSession) => (
             <li key={session.id}>
-              <strong>{session.name}</strong> -{session.sets} sets of{" "}
-              {session.reps} reps at {session.weight}kg
+              <strong>{session.navn}</strong> -{session.sett} sets of{" "}
+              {session.repetisjoner} reps at {session.vekt}kg
             </li>
           ))}
         </ul>

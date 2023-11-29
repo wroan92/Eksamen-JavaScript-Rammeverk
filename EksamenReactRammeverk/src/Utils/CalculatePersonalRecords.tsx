@@ -1,25 +1,36 @@
-import { Exercise } from "../Types/TrainingSession.tsx";
-/* import { MuscleGroups } from "../Types/MuscleGroups.tsx"; */
-import { PersonalRecord } from "../Types/PersonalRecord.tsx";
+import { TrainingSession } from "../Types/TrainingSession";
+import { PersonalRecords } from "../Types/PersonalRecords";
 
 export const calculatePersonalRecords = (
-  sessions: Exercise[]
-): PersonalRecord[] => {
-  const records: Record<string, PersonalRecord> = {};
+  sessions: TrainingSession[]
+): Record<string, PersonalRecords[]> => {
+  const records: Record<string, PersonalRecords[]> = {};
 
   sessions.forEach((session) => {
-    const key = session.name;
-    const currentRecord = records[key];
+    const key = session.navn;
+    if (!records[key]) {
+      records[key] = [];
+    }
 
-    if (!currentRecord || currentRecord.maxWeight < session.weight) {
-      records[key] = {
-        exercise: session.name,
-        maxWeight: session.weight,
-        maxReps: session.reps,
-        maxSets: session.sets,
-      };
+    const newRecord: PersonalRecords = {
+      exercise: session.navn,
+      maxWeight: session.vekt,
+      maxReps: session.repetisjoner,
+      maxSets: session.sett,
+    };
+
+    records[key].push(newRecord);
+
+    records[key].sort((a, b) => {
+      if (b.maxWeight !== a.maxWeight) return b.maxWeight - a.maxWeight;
+      if (b.maxSets !== a.maxSets) return b.maxSets - a.maxSets;
+      return b.maxReps - a.maxReps;
+    });
+
+    if (records[key].length > 5) {
+      records[key].length = 5; 
     }
   });
 
-  return Object.values(records);
+  return records;
 };

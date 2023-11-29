@@ -1,6 +1,9 @@
 import { createContext, useState, useEffect } from "react";
 import { TrainingSession } from "../Types/TrainingSession";
 
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+
 interface ApiDataContextType {
   exerciseData: TrainingSession[] | null;
   addTrainingSession: (session: TrainingSession) => void;
@@ -14,7 +17,7 @@ export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({
   const [exerciseData, setExercises] = useState<TrainingSession[] | null>(null);
 
   const addTrainingSession = (session: TrainingSession) => {
-    fetch("https://crudcrud.com/api/72727771933f463c84a2e6de0fe6ce22/øvelser", {
+    fetch(`${API_KEY}/ovelser`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -35,7 +38,9 @@ export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       .then((data) => {
         console.log("Ny treningsøkt lagt til:", data);
-        setExercises((prevExercises) => [...(prevExercises || []), data]);
+        setExercises((prevExercises) =>
+          prevExercises ? [...prevExercises, data] : [data]
+        );
       })
       .catch((error) => {
         console.error("Feil ved posting av treningsøkt:", error);
@@ -43,7 +48,7 @@ export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
-    fetch("https://crudcrud.com/api/72727771933f463c84a2e6de0fe6ce22/øvelser")
+    fetch(`${API_KEY}/ovelser`)
       .then((response) => response.json())
       .then((data) => setExercises(data))
       .catch((error) => console.error("Error:", error));
@@ -57,4 +62,3 @@ export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export default ApiDataProvider;
-

@@ -1,7 +1,8 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { ApiDataContext } from "../Context/ApiDataContext";
 import { calculatePersonalRecords } from "../Utils/CalculatePersonalRecords";
 import { PersonalRecords } from "../Types/PersonalRecords";
+/* import { ExerciseGraph } from "../ExerciseGraph.tsx"; */
 
 const ExerciseRecords: React.FC = () => {
   const context = useContext(ApiDataContext);
@@ -19,7 +20,7 @@ const ExerciseRecords: React.FC = () => {
       <ul>
         {maxRecords.map((record: PersonalRecords, index: number) => (
           <li key={`${record.exercise}-${index}`}>
-            {record.exercise}: Max Reps: {record.maxReps}, Max Sets: {record.maxSets}, Max Weight: {record.maxWeight}kg
+            {record.exercise}: Reps: {record.maxReps}, Sets: {record.maxSets}, Weight: {record.maxWeight}kg
           </li>
         ))}
       </ul>
@@ -28,4 +29,3 @@ const ExerciseRecords: React.FC = () => {
 };
 
 export default ExerciseRecords;
-

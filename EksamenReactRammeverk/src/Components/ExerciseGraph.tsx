@@ -1,18 +1,60 @@
-/* import { Bar } from 'react-chartjs-2';
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { TrainingSession } from "../Types/TrainingSession";
+import { calculateExerciseData } from "../Utils/CalculateExerciseData";
 
-const ExerciseGraph = ({ records }) => {
-  const data = {
-    labels: records.map(record => record.exercise),
-    datasets: [
-      {
-        label: 'Maks vekt',
-        data: records.map(record => record.maxWeight),
-        backgroundColor: 'rgba(54, 162, 235, 0.6)'
-      }
-    ]
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+
+interface Props {
+  sessions: TrainingSession[];
+}
+
+const ExerciseGraph: React.FC<Props> = ({ sessions }) => {
+  const { chartData, setRepsData } = calculateExerciseData(sessions);
+
+  const options = {
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: "Exercise Records",
+        font: {
+          size: 18,
+        },
+      },
+      tooltip: {
+        enabled: true,
+        intersect: false,
+        callbacks: {
+          label: function (tooltipItem: any) {
+            return `${tooltipItem.label}: ${tooltipItem.formattedValue} kg (${setRepsData[tooltipItem.dataIndex]})`;
+          },
+        },
+      },
+    },
   };
 
-  return <Bar data={data} />;
+  return (
+    <div style={{ width: "100%", height: "300px" }}>
+      <Bar data={chartData} options={options} />
+    </div>
+  );
 };
 
-export default ExerciseGraph; */
+export default ExerciseGraph;

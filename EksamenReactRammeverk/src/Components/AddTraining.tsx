@@ -10,7 +10,7 @@ const AddTrainingComponent: React.FC = () => {
   const [repetisjoner, setReps] = useState<number>(1);
   const [sett, setSets] = useState<number>(1);
   const [vekt, setWeight] = useState<number>(0);
-  const [showForm, setShowForm] = useState<boolean>(false); // Ny state for å vise/skjule skjema
+  const [showForm, setShowForm] = useState<boolean>(false);
   const apiDataContext = useContext(ApiDataContext);
 
   const exercisesMapping: Record<string, string> = {
@@ -38,7 +38,7 @@ const AddTrainingComponent: React.FC = () => {
     setShowOptions(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newTrainingSession: TrainingSession = {
       navn,
       muskelgruppe,
@@ -48,18 +48,30 @@ const AddTrainingComponent: React.FC = () => {
     };
 
     if (apiDataContext?.addTrainingSession) {
-      apiDataContext.addTrainingSession(newTrainingSession);
+      try {
+        const success = await apiDataContext.addTrainingSession(
+          newTrainingSession
+        );
 
-      toast.success("Ny treningsøkt lagt til!");
-
-      setNavn("");
-      setMuskelGruppe("");
-      setReps(1);
-      setSets(1);
-      setWeight(0);
-      setShowOptions(false);
+        if (success) {
+          toast.success("Ny treningsøkt lagt til!");
+          setNavn("");
+          setMuskelGruppe("");
+          setReps(1);
+          setSets(1);
+          setWeight(0);
+          setShowOptions(false);
+        } else {
+          toast.error(
+            "Kunne ikke legge til treningsøkten. Kontakt administrator eller prøv igjen senere."
+          );
+        }
+      } catch (error) {
+        console.error("Feil ved posting av treningsøkt:", error);
+        toast.error("En feil oppstod under lagring av treningsøkten.");
+      }
     } else {
-      toast.error("Kunne ikke legge til treningsøkten.");
+      toast.error("API-kontekst ikke tilgjengelig.");
     }
   };
 

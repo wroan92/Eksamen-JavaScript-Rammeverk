@@ -1,92 +1,104 @@
 import { createContext, useState, useEffect } from "react";
 import { TrainingSession } from "../Types/TrainingSession";
-/* import { PersonalData } from "../Types/PersonalData.tsx"; */
-const API_KEY = import.meta.env.VITE_API_KEY;
+import { PersonalData } from "../Types/PersonalData";
+
 
 interface ApiDataContextType {
   exerciseData: TrainingSession[] | null;
-  addTrainingSession: (session: TrainingSession) => void;
-  postPersonalData: (personalData: PersonalData) => void;
+  personalData: PersonalData[] | null; // Lagt til et felt for personlig data
+  addTrainingSession: (session: TrainingSession) => Promise<boolean>;
+  postPersonalData: (personalData: PersonalData) => Promise<boolean>;
 }
 
-interface PersonalData {
-  vekt: string;
-  høyde: string;
-}
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 export const ApiDataContext = createContext<ApiDataContextType | null>(null);
 
-export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ApiDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [exerciseData, setExercises] = useState<TrainingSession[] | null>(null);
+  const [personalData, setPersonalData] = useState<PersonalData[] | null>(null); // Ny state for personlig data
 
-  const addTrainingSession = (session: TrainingSession) => {
-    fetch(`${API_KEY}/ovelser`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        navn: session.navn,
-        muskelgruppe: session.muskelgruppe,
-        vekt: session.vekt,
-        repetisjoner: session.repetisjoner,
-        sett: session.sett,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Server returned ${response.status}: ${response.statusText}`
-          );
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Ny treningsøkt lagt til:", data);
-        setExercises((prevExercises) =>
-          prevExercises ? [...prevExercises, data] : [data]
-        );
-      })
-      .catch((error) => {
-        console.error("Feil ved posting av treningsøkt:", error);
+  const addTrainingSession = async (session: TrainingSession): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_KEY}/ovelser`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(session),
       });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setExercises((prevExercises) => prevExercises ? [...prevExercises, data] : [data]);
+      return true;
+    } catch (error) {
+      console.error("Feil ved posting av treningsøkt:", error);
+      return false;
+    }
   };
 
-  const postPersonalData = (personalData: PersonalData) => {
-    fetch(`${API_KEY}/personalData`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(personalData),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Server returned ${response.status}: ${response.statusText}`
-          );
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Personlige data lagt til:", data);
-        // Her kan du implementere oppdatering av state hvis nødvendig
-      })
-      .catch((error) => {
-        console.error("Feil ved posting av personlige data:", error);
+  const postPersonalData = async (data: PersonalData): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_KEY}/personalData`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setPersonalData((prevData) => prevData ? [...prevData, result] : [result]);
+      return true;
+    } catch (error) {
+      console.error("Feil ved posting av personlige data:", error);
+      return false;
+    }
   };
 
   useEffect(() => {
-    fetch(`${API_KEY}/ovelser`)
-      .then((response) => response.json())
-      .then((data) => setExercises(data))
-      .catch((error) => console.error("Error:", error));
+    // Hent treningsdata
+    const fetchTrainingData = async () => {
+      try {
+        const response = await fetch(`${API_KEY}/ovelser`);
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setExercises(data);
+      } catch (error) {
+        console.error("Feil ved innhenting av treningsdata:", error);
+      }
+    };
+
+    // Hent personlig data
+    const fetchPersonalData = async () => {
+      try {
+        const response = await fetch(`${API_KEY}/personalData`);
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setPersonalData(data);
+      } catch (error) {
+        console.error("Feil ved innhenting av personlige data:", error);
+      }
+    };
+
+    fetchTrainingData();
+    fetchPersonalData();
   }, []);
 
   return (
-    <ApiDataContext.Provider value={{ exerciseData, addTrainingSession, postPersonalData }}>
+    <ApiDataContext.Provider value={{ exerciseData, personalData, addTrainingSession, postPersonalData }}>
       {children}
     </ApiDataContext.Provider>
   );
 };
 
 export default ApiDataProvider;
+
